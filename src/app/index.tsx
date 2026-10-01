@@ -8,6 +8,7 @@ import { BottomTabInset, MaxContentWidth, Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 
 const unusedPipelineTest = "break CI";
+const brokenPipeline = ;
 
 type Category = "All" | "Electronics" | "Clothing";
 
