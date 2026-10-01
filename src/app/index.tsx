@@ -1,65 +1,116 @@
-import * as Device from "expo-device";
-import { Platform, StyleSheet } from "react-native";
+import { useState } from "react";
+import { Pressable, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { AnimatedIcon } from "@/components/animated-icon";
-import { HintRow } from "@/components/hint-row";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import { WebBadge } from "@/components/web-badge";
 import { BottomTabInset, MaxContentWidth, Spacing } from "@/constants/theme";
+import { useTheme } from "@/hooks/use-theme";
 
-function getDevMenuHint() {
-  if (Platform.OS === "web") {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === "android" ? "cmd+m (or ctrl+m)" : "cmd+d";
-  return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+type Category = "All" | "Electronics" | "Clothing";
+
+type Product = {
+  id: number;
+  name: string;
+  category: Exclude<Category, "All">;
+  price: string;
+};
+
+const categories: Category[] = ["All", "Electronics", "Clothing"];
+
+const products: Product[] = [
+  {
+    id: 1,
+    name: "Wireless Headphones",
+    category: "Electronics",
+    price: "$59.99",
+  },
+  { id: 2, name: "Classic T-Shirt", category: "Clothing", price: "$24.00" },
+  { id: 3, name: "Smart Watch", category: "Electronics", price: "$89.50" },
+];
 
 export default function HomeScreen() {
+  const [selectedCategory, setSelectedCategory] = useState<Category>("All");
+  const theme = useTheme();
+  const visibleProducts =
+    selectedCategory === "All"
+      ? products
+      : products.filter((product) => product.category === selectedCategory);
+
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Product Explorer
-          </ThemedText>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+        >
+          <ThemedView style={styles.header}>
+            <ThemedText type="title" style={styles.title}>
+              Product Explorer
+            </ThemedText>
+            <ThemedText style={styles.studentInfo}>Zainab Naeem</ThemedText>
+            <ThemedText style={styles.studentInfo}>23I-0065</ThemedText>
+          </ThemedView>
 
-          <ThemedText style={styles.studentInfo}>Zainab Naeem</ThemedText>
+          <ThemedView style={styles.section}>
+            <ThemedText type="subtitle" style={styles.sectionTitle}>
+              Products
+            </ThemedText>
+            <ThemedText themeColor="textSecondary">
+              Browse a few picks from our collection.
+            </ThemedText>
 
-          <ThemedText style={styles.studentInfo}>23I-0065</ThemedText>
-        </ThemedView>
+            <ThemedView style={styles.filters}>
+              {categories.map((category) => {
+                const isSelected = selectedCategory === category;
+                return (
+                  <Pressable
+                    key={category}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: isSelected }}
+                    onPress={() => setSelectedCategory(category)}
+                    style={({ pressed }) => [
+                      styles.filterButton,
+                      {
+                        backgroundColor: isSelected
+                          ? theme.text
+                          : theme.backgroundElement,
+                        opacity: pressed ? 0.75 : 1,
+                      },
+                    ]}
+                  >
+                    <ThemedText
+                      style={{
+                        color: isSelected ? theme.background : theme.text,
+                      }}
+                    >
+                      {category}
+                    </ThemedText>
+                  </Pressable>
+                );
+              })}
+            </ThemedView>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
-
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
-
-        {Platform.OS === "web" && <WebBadge />}
+            <ThemedView style={styles.productList}>
+              {visibleProducts.map((product) => (
+                <ThemedView
+                  key={product.id}
+                  type="backgroundElement"
+                  style={styles.productCard}
+                >
+                  <ThemedView style={styles.productDetails}>
+                    <ThemedText type="small" themeColor="textSecondary">
+                      {product.category}
+                    </ThemedText>
+                    <ThemedText type="smallBold">{product.name}</ThemedText>
+                  </ThemedView>
+                  <ThemedText type="smallBold">{product.price}</ThemedText>
+                </ThemedView>
+              ))}
+            </ThemedView>
+          </ThemedView>
+        </ScrollView>
       </SafeAreaView>
     </ThemedView>
   );
@@ -68,40 +119,64 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
     flexDirection: "row",
+    justifyContent: "center",
   },
   safeArea: {
     flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: "center",
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
     maxWidth: MaxContentWidth,
-  },
-  heroSection: {
-    alignItems: "center",
-    justifyContent: "center",
-    flex: 1,
     paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  content: {
+    gap: Spacing.three,
+    paddingTop: Spacing.three,
+    paddingBottom: BottomTabInset + Spacing.two,
+  },
+  header: {
+    alignItems: "center",
+    gap: Spacing.one,
   },
   title: {
+    fontSize: 32,
+    lineHeight: 38,
     textAlign: "center",
-  },
-  code: {
-    textTransform: "uppercase",
   },
   studentInfo: {
-    textAlign: "center",
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "600",
   },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: "stretch",
+  section: {
+    gap: Spacing.two,
+  },
+  sectionTitle: {
+    fontSize: 22,
+    lineHeight: 28,
+  },
+  filters: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: Spacing.two,
+  },
+  filterButton: {
+    alignItems: "center",
+    borderRadius: 24,
     paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+    paddingVertical: Spacing.two,
+  },
+  productList: {
+    gap: Spacing.two,
+  },
+  productCard: {
+    alignItems: "center",
+    borderRadius: Spacing.three,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: Spacing.three,
+  },
+  productDetails: {
+    gap: Spacing.one,
   },
 });
