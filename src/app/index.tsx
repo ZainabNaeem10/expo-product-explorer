@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import { BottomTabInset, MaxContentWidth, Spacing } from "@/constants/theme";
+import { MaxContentWidth, Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 
 type Category = "All" | "Electronics" | "Clothing";
@@ -124,6 +124,7 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
+    width: "100%",
     maxWidth: MaxContentWidth,
     paddingHorizontal: Spacing.four,
   },
@@ -133,7 +134,6 @@ const styles = StyleSheet.create({
   content: {
     gap: Spacing.three,
     paddingTop: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.two,
   },
   header: {
     alignItems: "center",
